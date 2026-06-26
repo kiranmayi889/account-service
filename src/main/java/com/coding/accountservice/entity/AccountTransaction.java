@@ -17,12 +17,7 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 
 @Entity
-@Table(
-        name = "account_transaction",
-        uniqueConstraints = {
-                @UniqueConstraint(name = "uk_account_transaction_event_id", columnNames = "eventId")
-        }
-)
+@Table(name = "account_transaction")
 public class AccountTransaction {
 
 //    @Id
@@ -30,93 +25,93 @@ public class AccountTransaction {
 //    private Long id;
 
 	@Id
-    @Column(name = "event_id", nullable = false, updatable = false)
-    private String eventId;
+	@Column(name = "event_id", nullable = false, updatable = false)
+	private String eventId;
 
-    @Column(nullable = false)
-    private String accountId;
+	@Column(nullable = false)
+	private String accountId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private EventType type;
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private EventType type;
 
-    @NotNull(message = "amount is required")
-    @DecimalMin(value = "0.01", inclusive = true, message = "amount must be greater than 0")
-    private BigDecimal amount;
+	@NotNull(message = "amount is required")
+	@DecimalMin(value = "0.01", inclusive = true, message = "amount must be greater than 0")
+	private BigDecimal amount;
 
-    @Column(nullable = false)
-    private String currency;
+	@Column(nullable = false)
+	private String currency;
 
-    @Column(nullable = false)
-    private Instant eventTimestamp;
+	@Column(nullable = false)
+	private Instant eventTimestamp;
 
-    @Column(nullable = false)
-    private Instant createdAt;
-    
-    @Lob
-    @Column(name = "metadata_json")
-    private String metadataJson;
+	@Column(nullable = false)
+	private Instant createdAt;
 
-    @PrePersist
-    public void prePersist() {
-        this.createdAt = Instant.now();
-    }
+	@Lob
+	@Column(name = "metadata_json")
+	private String metadataJson;
+
+	@PrePersist
+	public void prePersist() {
+		this.createdAt = Instant.now();
+	}
 //
 //    public Long getId() {
 //        return id;
 //    }
 
-    public String getEventId() {
-        return eventId;
-    }
+	public String getEventId() {
+		return eventId;
+	}
 
-    public String getAccountId() {
-        return accountId;
-    }
+	public String getAccountId() {
+		return accountId;
+	}
 
-    public EventType getType() {
-        return type;
-    }
+	public EventType getType() {
+		return type;
+	}
 
-    public BigDecimal getAmount() {
-        return amount;
-    }
+	public BigDecimal getAmount() {
+		return amount;
+	}
 
-    public String getCurrency() {
-        return currency;
-    }
+	public String getCurrency() {
+		return currency;
+	}
 
-    public Instant getEventTimestamp() {
-        return eventTimestamp;
-    }
+	public Instant getEventTimestamp() {
+		return eventTimestamp;
+	}
 
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
+	public Instant getCreatedAt() {
+		return createdAt;
+	}
 
-    public void setEventId(String eventId) {
-        this.eventId = eventId;
-    }
+	public void setEventId(String eventId) {
+		this.eventId = eventId;
+	}
 
-    public void setAccountId(String accountId) {
-        this.accountId = accountId;
-    }
+	public void setAccountId(String accountId) {
+		this.accountId = accountId;
+	}
 
-    public void setType(EventType type) {
-        this.type = type;
-    }
+	public void setType(EventType type) {
+		this.type = type;
+	}
 
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
-    }
+	public void setAmount(BigDecimal amount) {
+		this.amount = amount;
+	}
 
-    public void setCurrency(String currency) {
-        this.currency = currency;
-    }
+	public void setCurrency(String currency) {
+		this.currency = currency;
+	}
 
-    public void setEventTimestamp(Instant eventTimestamp) {
-        this.eventTimestamp = eventTimestamp;
-    }
+	public void setEventTimestamp(Instant eventTimestamp) {
+		this.eventTimestamp = eventTimestamp;
+	}
 
 	public String getMetadataJson() {
 		return metadataJson;
@@ -126,6 +121,4 @@ public class AccountTransaction {
 		this.metadataJson = metadataJson;
 	}
 
-    
-    
 }

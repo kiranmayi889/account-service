@@ -7,13 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.CannotAcquireLockException;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.PessimisticLockingFailureException;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.coding.accountservice.dto.AccountDetailsResponse;
@@ -42,29 +36,31 @@ public class AccountService {
 	@Autowired
 	private ObjectMapper objectMapper;
 
-	@Retryable(retryFor = { CannotAcquireLockException.class,
-			PessimisticLockingFailureException.class }, maxAttempts = 3, backoff = @Backoff(delay = 100, multiplier = 2))
-	@Transactional(isolation = Isolation.SERIALIZABLE)
+	@Transactional
 	// used serializable isolation to handle multiple requests so that in case if
 	// multiple threads came the balance should be updated appropriately
 	public ApplyTransactionResponse applyTransaction(String accountId, ApplyTransactionRequest request) {
 		// 1) If event already exists, it's a duplicate/idempotent retry
 		AccountTransaction existing = transactionRepository.findById(request.getEventId()).orElse(null);
+		Account account;
 		if (existing != null) {
-			Account existingAccount = accountRepository.findById(existing.getAccountId())
-					.orElseThrow(() -> new IllegalStateException("Account missing for duplicate event"));
+			account = accountRepository.findById(accountId).orElseThrow(() -> new AccountNotFoundException(accountId));
 
 			ApplyTransactionResponse response = new ApplyTransactionResponse();
-			response.setAccountId(existingAccount.getAccountId());
+			response.setAccountId(accountId);
 			response.setEventId(existing.getEventId());
-			response.setBalance(existingAccount.getBalance());
 			response.setDuplicate(true);
+			response.setTransactionStatus("PROCESSED");
 			return response;
+		} else {
+			account = accountRepository.findById(accountId).orElse(null);
 		}
 
-		// 2) Ensure account exists (safe under concurrent first-time create)
-		Account account = loadOrCreateAccount(accountId);
-
+		if (account == null) {
+			account = new Account();
+			account.setAccountId(accountId);
+			account.setBalance(BigDecimal.ZERO);
+		}
 		// 3) Insert transaction row first.
 		// eventId is the idempotency key. If another thread inserts same eventId
 		// concurrently,
@@ -77,8 +73,15 @@ public class AccountService {
 		transaction.setCurrency(request.getCurrency());
 		transaction.setEventTimestamp(request.getEventTimestamp());
 		transaction.setMetadataJson(toJson(request.getMetadata()));
-
-		transactionRepository.save(transaction);
+		ApplyTransactionResponse response = new ApplyTransactionResponse();
+		try {
+			transactionRepository.save(transaction);
+		} catch (Exception ex) {
+			response.setAccountId(accountId);
+			response.setEventId(request.getEventId());
+			response.setTransactionStatus("FAILED");
+			response.setDuplicate(true);
+		}
 
 		if (request.getType() == EventType.CREDIT) {
 			account.setBalance(account.getBalance().add(request.getAmount()));
@@ -87,14 +90,19 @@ public class AccountService {
 		}
 
 		account.setUpdatedAt(Instant.now());
+		try {
+			accountRepository.save(account);
+			response.setAccountId(accountId);
+			response.setEventId(request.getEventId());
+			response.setDuplicate(false);
+			response.setTransactionStatus("PROCESSED");
 
-		accountRepository.save(account);
-
-		ApplyTransactionResponse response = new ApplyTransactionResponse();
-		response.setAccountId(accountId);
-		response.setEventId(request.getEventId());
-		response.setBalance(account.getBalance());
-		response.setDuplicate(false);
+		} catch (Exception ex) {
+			response.setAccountId(accountId);
+			response.setEventId(request.getEventId());
+			response.setTransactionStatus("FAILED");
+			response.setDuplicate(true);
+		}
 		return response;
 	}
 
@@ -117,27 +125,6 @@ public class AccountService {
 		response.setUpdatedAt(account.getUpdatedAt());
 		response.setRecentTransactions(recentTransactions);
 		return response;
-	}
-
-	private Account loadOrCreateAccount(String accountId) {
-		Account account = accountRepository.findById(accountId).orElse(null);
-		if (account == null) {
-			try {
-				account = new Account();
-				account.setAccountId(accountId);
-				account.setBalance(BigDecimal.ZERO);
-				account.setUpdatedAt(Instant.now());
-
-				accountRepository.saveAndFlush(account);
-
-			} catch (DataIntegrityViolationException ex) {
-
-				// if other thread already created the account then just read the created
-				// account info along with balance.
-				account = accountRepository.findById(accountId).orElseThrow();
-			}
-		}
-		return account;
 	}
 
 	private AccountTransactionDto toDto(AccountTransaction tx) {

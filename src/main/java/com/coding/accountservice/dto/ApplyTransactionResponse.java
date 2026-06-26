@@ -4,40 +4,41 @@ import java.math.BigDecimal;
 
 public class ApplyTransactionResponse {
 
-    private String accountId;
-    private String eventId;
-    private BigDecimal balance;
-    private boolean duplicate;
+	private String accountId;
+	private String eventId;
+	private boolean duplicate;
+	private String transactionStatus;
 
-    public String getAccountId() {
-        return accountId;
-    }
+	public String getAccountId() {
+		return accountId;
+	}
 
-    public String getEventId() {
-        return eventId;
-    }
+	public String getEventId() {
+		return eventId;
+	}
 
-    public BigDecimal getBalance() {
-        return balance;
-    }
+	public boolean isDuplicate() {
+		return duplicate;
+	}
 
-    public boolean isDuplicate() {
-        return duplicate;
-    }
+	public void setAccountId(String accountId) {
+		this.accountId = accountId;
+	}
 
-    public void setAccountId(String accountId) {
-        this.accountId = accountId;
-    }
+	public void setEventId(String eventId) {
+		this.eventId = eventId;
+	}
 
-    public void setEventId(String eventId) {
-        this.eventId = eventId;
-    }
+	public void setDuplicate(boolean duplicate) {
+		this.duplicate = duplicate;
+	}
 
-    public void setBalance(BigDecimal balance) {
-        this.balance = balance;
-    }
+	public String getTransactionStatus() {
+		return transactionStatus;
+	}
 
-    public void setDuplicate(boolean duplicate) {
-        this.duplicate = duplicate;
-    }
+	public void setTransactionStatus(String transactionStatus) {
+		this.transactionStatus = transactionStatus;
+	}
+
 }
