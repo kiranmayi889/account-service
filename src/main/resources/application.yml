@@ -46,3 +46,11 @@ otel:
   exporter:
     otlp:
       endpoint: http://localhost:4317
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+
+  api-docs:
+    path: /v3/api-docs

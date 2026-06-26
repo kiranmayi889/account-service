@@ -2,7 +2,6 @@ package com.coding.accountservice.entity;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Map;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,17 +11,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "account_transaction")
 public class AccountTransaction {
-
-//    @Id
-//    @GeneratedValue(strategy = GenerationType.IDENTITY)
-//    private Long id;
 
 	@Id
 	@Column(name = "event_id", nullable = false, updatable = false)
