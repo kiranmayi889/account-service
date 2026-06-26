@@ -28,7 +28,21 @@ management:
   endpoints:
     web:
       exposure:
-        include: health
+        include: health,metrics,prometheus
   endpoint:
     health:
       show-details: always
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+  metrics:
+    tags:
+      application: ${spring.application.name}
+otel:
+  service:
+    name: account-service
+
+  exporter:
+    otlp:
+      endpoint: http://localhost:4317
