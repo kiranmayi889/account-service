@@ -39,6 +39,10 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
+  prometheus:
+    metrics:
+      export:
+        enabled: true
 otel:
   service:
     name: account-service

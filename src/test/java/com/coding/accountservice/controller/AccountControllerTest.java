@@ -24,6 +24,8 @@ import com.coding.accountservice.dto.BalanceResponse;
 import com.coding.accountservice.service.AccountService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.micrometer.tracing.Tracer;
+
 @WebMvcTest(AccountController.class)
 class AccountControllerTest {
 
@@ -32,6 +34,9 @@ class AccountControllerTest {
 
     @MockBean
     private AccountService accountService;
+    
+    @MockBean
+    private Tracer tracer;
 
     @Autowired
     private ObjectMapper objectMapper;
